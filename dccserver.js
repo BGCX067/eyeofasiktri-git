@@ -5,6 +5,7 @@ var db = require("mongojs").connect(databaseUrl, dbCollections);
 var playermanager = require("./playermanager.js");
 var sys = require("sys");
 var commands = require("./commands.js");
+var ircbot = require("./irc.js");
 
 exports.init = init;
 exports.listClients = listClients;
@@ -59,7 +60,39 @@ function server_loop(stream) {
 		if (data.length == 0) return;
 
     		if (!client.hasOwnProperty("player")) {
-			
+			data = data.trim();
+			var cmds = data.split(" ");
+			if (cmds[0] == "resume" || cmds[0] == "newcharacter") {
+				console.log("retrieving player using character name: " + cmds[1]);
+				client.player = playermanager.getPlayerByCharacterName(cmds[1]);
+				if (client.player != null) {
+					console.log("\nfound.");
+					client.player.dccClient = client;
+					client.nick = client.player.nick;
+					var character = playermanager.getCharacterByOwnerName(cmds[1]);
+					if (character == null) character = client.player.createNewCharacter();
+					else client.player.setController(character);
+					
+					character._sendMsg("Welcome to the Eye of Asiktri!\n");
+					client.player.spawn();
+					
+					//Broadcast to irc and clients the new player
+					clients.forEach(function(c) {
+	        				if (c != client) {
+        	  					c.stream.write(client.player.nick + " has joined the game.\n");
+        					}
+      					});
+
+					ircbot.sendToMainChannel(client.nick + " has entered the game.");
+
+				} else {
+					stream.write("The server cannot create a player, werd..\n");
+					client.delete = true;
+				}
+
+			}
+			return;
+			/*
       			var authToken = data.match(/\S+/);
 			console.log("DCC: received authtoken=[" + data + "]");
 
@@ -96,6 +129,9 @@ function server_loop(stream) {
           					c.stream.write(player.nick + " has joined the game.\n");
         				}
       				});
+
+				ircbot.sendToMainChannel(client.nick + " has entered the game.");
+
 			} else {
 				//player is returning after a disconnect
 				console.log("\tfound previously connected player using that token.");
@@ -114,7 +150,10 @@ function server_loop(stream) {
         				}
       				});
 
+				ircbot.sendToMainChannel(client.nick + " has entered the game.");
+
 			}
+			//*/
 			return;
     		} else {
 			//client has been assigned a player, a character, and has spawned into the
@@ -187,6 +226,6 @@ function server_loop(stream) {
 var dccserver = net.createServer(server_loop);
 
 function init() {
-	console.log("Starting DCC server on port 4444");
-	dccserver.listen(4444);
+	console.log("Starting DCC server on port 8888");
+	dccserver.listen(8888);
 }

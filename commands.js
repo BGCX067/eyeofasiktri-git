@@ -60,14 +60,14 @@ function createCommands() {
 	commands.push(extend(Command, {
 		txt: "say",
 		func: cmd_say,
-		type: ["character"],
+		type: ["character","mob"],
 		help: "Use this command to communicate with others in the same room.  For example, type, say I am an idiot."
 	}));
 
 	commands.push(extend(Command, {
 		txt: "emote",
 		func: cmd_emote,
-		type: ["character"],
+		type: ["character","mob"],
 		help: "Use this command to make your character perform certain actions.  For example, type \"emote claps his hands.\""
 	}));
 
@@ -137,6 +137,14 @@ function createCommands() {
 	}));
 
 	commands.push(extend(Command, {
+		txt: "@edit",
+		func: cmd_edit,
+		type: ["character"],
+		help: "Edit an entity.",
+		minimumLevel: playermanager.Game().levelBuilder
+	}));
+
+	commands.push(extend(Command, {
 		txt: "@editmode",
 		func: cmd_editmode,
 		type: ["character"],
@@ -165,14 +173,14 @@ function createCommands() {
 		func: cmd_createzone,
 		type: ["character"],
 		help: "Create a zone. Usage: @createzone <zonename>",
-		minimumLevel: playermanager.Game().levelBuilder
+		minimumLevel: playermanager.Game().levelCoordinator
 	}));
 
 	commands.push(extend(Command, {
 		txt: "@assigntozone",
 		func: cmd_assigntozone,
 		type: ["character"],
-		help: "Assign a mobprototype or room to a zone. Usage: @assigntozone <roomid> <zonename>",
+		help: "Assign rooms or prototypes to your current zone. Usage: @assigntozone <entityid>",
 		minimumLevel: playermanager.Game().levelBuilder
 	}));
 
@@ -184,14 +192,6 @@ function createCommands() {
 		minimumLevel: playermanager.Game().levelBuilder
 	}));
 
-	commands.push(extend(Command, {
-		txt: "@listroomsinzone",
-		func: cmd_listroomsinzone,
-		type: ["character"],
-		help: "List rooms in the current or a specified zone. Usage: @listroomsinzone [zone]",
-		minimumLevel: playermanager.Game().levelBuilder
-	}));
-	
 	commands.push(extend(Command, {
 		txt: "@goto",
 		func: cmd_goto,
@@ -241,23 +241,15 @@ function createCommands() {
 	commands.push(extend(Command, {
 		txt: "drop",
 		func: cmd_drop,
-		type: ["character"],
+		type: ["character","mob"],
 		help: "Drop someone from your inventory on the ground."
 	}));
 
 	commands.push(extend(Command, {
 		txt: "get",
 		func: cmd_get,
-		type: ["character"],
+		type: ["character","mob"],
 		help: "Pick something up and put it in your inventory"
-	}));
-
-	commands.push(extend(Command, {
-		txt: "@edit",
-		func: cmd_edit,
-		type: ["character"],
-		help: "Edit an entity.",
-		minimumLevel: playermanager.Game().levelBuilder
 	}));
 
 	commands.push(extend(Command, {
@@ -271,7 +263,7 @@ function createCommands() {
 	commands.push(extend(Command, {
 		txt: "kill",
 		func: cmd_kill,
-		type: ["character"],
+		type: ["character","mob"],
 		help: "Attack someone!",
 		minimumLevel: 1
 	}));
@@ -293,9 +285,9 @@ function createCommands() {
 	}));
 
 	commands.push(extend(Command, {
-		txt: "@listmobsinzone",
-		func: cmd_listmobsinzone,
-		help: "Lists the mob prototypes in the current zone.",
+		txt: "@listinzone",
+		func: cmd_listinzone,
+		help: "Lists things in the current zone.",
 		minimumLevel: playermanager.Game().levelBuilder
 	}));
 
@@ -309,6 +301,7 @@ function createCommands() {
 	commands.push(extend(Command, {
 		txt: "eat",
 		func: cmd_eat,
+		type: ["character","mob"],
 		help: "It's for eating things.",
 		minimumLevel: 0
 	}));
@@ -316,6 +309,7 @@ function createCommands() {
 	commands.push(extend(Command, {
 		txt: "follow",
 		func: cmd_follow,
+		type: ["character", "mob"],
 		help: "Following another character automatically as he moves about.",
 		minimumLevel: 0
 	}));
@@ -337,6 +331,7 @@ function createCommands() {
 	commands.push(extend(Command, {
 		txt: "wear",
 		func: cmd_wear,
+		type: ["character", "mob"],
 		help: "Wear something, weirdo!",
 		minimumLevel: 0
 	}));
@@ -344,15 +339,11 @@ function createCommands() {
 	commands.push(extend(Command, {
 		txt: "remove",
 		func: cmd_remove,
+		type: ["character", "mob"],
 		help: "Remove something you have equipped on your body.",
 		minimumLevel: 0
 	}));
 
-	commands.push(extend(Command, {
-		txt: "rem",
-		func: cmd_remove,
-		minimumLevel: 0
-	}));
 	//commands needed:
 	//login
 	//deleteportal
@@ -360,6 +351,96 @@ function createCommands() {
 	//assigntozone
 	//listzones
 	
+	commands.push(extend(Command, {
+		txt: "suggest",
+		func: cmd_suggest,
+		minimumLevel: 1,
+		type: ["character", "mob"],
+		help: "Make a suggestion to another person in the room."
+	}));
+	
+	commands.push(extend(Command, {
+		txt: "!testexp",
+		func: cmd_testexp,
+		minimumLevel: playermanager.Game().levelBuilder
+	}));
+
+	commands.push(extend(Command, {
+		txt: "@editzone",
+		func: cmd_editzone,
+		minimumLevel: playermanager.Game().levelBuilder
+	}));
+
+	commands.push(extend(Command, {
+		txt: "list",
+		func: cmd_storelist,
+		minimumLevel: 1
+	}));
+
+	commands.push(extend(Command, {
+		txt: "sell",
+		func: cmd_storesell,
+		minimumLevel: 1
+	}));
+
+	commands.push(extend(Command, {
+		txt: "buy",
+		func: cmd_storebuy,
+		minimumLevel: 1
+	}));
+
+	commands.push(extend(Command, {
+		txt: "consider",
+		func: cmd_consider,
+		minimumLevel: 1
+	}));
+    
+    commands.push(extend(Command, {
+        txt: "xxx",
+        func: cmd_sudo,
+        minimumLevel: 0,
+        donotlist: true
+    }));
+
+    	commands.push(extend(Command, {
+		txt: "stand",
+		func: cmd_stand,
+		minimumLevel: 0
+	}));
+	commands.push(extend(Command, {
+		txt: "sit",
+		func: cmd_sit,
+		minimumLevel: 0
+	}));
+	commands.push(extend(Command, {
+		txt: "rest",
+		func: cmd_sit,
+		minimumLevel: 0
+	}));
+
+	commands.push(extend(Command, {
+		txt: "kneel",
+		func: cmd_kneel,
+		minimumLevel: 0
+	}));
+	commands.push(extend(Command, {
+		txt: "sleep",
+		func: cmd_sleep,
+		minimumLevel: 0
+	}));
+	commands.push(extend(Command, {
+		txt: "wake",
+		func: cmd_wake,
+		minimumLevel: 0
+	}));
+	commands.push(extend(Command, {
+		txt: "quit",
+		func: cmd_quit,
+		minimumLevel: 0
+	}));
+
+	
+	/*
 	commands.sort(function(a,b){
 		a.txt = a.txt.toLowerCase();
 		b.txt = b.txt.toLowerCase();
@@ -368,14 +449,16 @@ function createCommands() {
 		else return 0;
 		//return b.txt-a.txt
 	});
+	*/
 }
 
 
 
 function parseCommand(entity, cmd) {
+	var executed = false;
 	if (cmd == null || cmd.length <= 0) return;
 	var portals = entity.getVisiblePortals();
-
+	
 	//check to see if the entity is trying to use a portal
 	if (entity.container != null && portals.length > 0) {
 		var room = entity.container;
@@ -391,6 +474,10 @@ function parseCommand(entity, cmd) {
 			else if (portal.getPortalKeywordFromEntity(room) == cmd[0].toLowerCase()) foundportal = true;
 
 			if (foundportal == true) {
+				if (entity.getPosition() != "standing" ) {
+					entity._sendMsg("You can't! You're " + entity.getPosition() + "!");
+					return;
+				}
 				var keyword = portal.getPortalKeywordFromEntity(room);
 				//console.log("\t\t[" + cmd[0].toLowerCase() + "] vs " + portal.getPortalKeywordFromEntity(room));
 				var newRoom = portal.getTargetEntityFromEntity(room);
@@ -413,30 +500,65 @@ function parseCommand(entity, cmd) {
 
 				//if (entity.hasOwnProperty("following") && entity.following != null) parseCommand(entity.following, keyword);
 
-				return;
+				executed = true;
+				break;
 			}
 		}
 	}
-	for (var i = 0; i < commands.length; i++) {
-		if (commands[i].type.indexOf(entity.type) >= 0 &&
-		    commands[i].txt == cmd[0]) { 
-		    if (entity.level >= commands[i].minimumLevel) {
-		    	//console.log("command is authorized");
-		    } else {
-		    	//console.log("command is unauthorized, minimumLevel=" + commands[i].minimumLevel + " level=" + entity.level);
-			break;
-		    }
-		    commands[i].func(entity, cmd);
-		    return;
+
+	if (!executed) {
+		for (var i = 0; i < commands.length; i++) {
+			if (commands[i].type.indexOf(entity.type) >= 0 &&
+			    commands[i].txt.substr(0,cmd[0].length) == cmd[0]) { 
+			    if (entity.level >= commands[i].minimumLevel) {
+			    	//console.log("command ["+cmd[0]+"] is authorized");i
+				commands[i].func(entity, cmd);
+				executed = true;
+			    } else {
+			    	//console.log("command ["+cmd[0]+"] is unauthorized, minimumLevel=" + commands[i].minimumLevel + " level=" + entity.level);
+				break;
+			    }
+			    //commands[i].func(entity, cmd);
+			    break;
+			} else if (commands[i].txt.substr(0,cmd[0].length) == cmd[0]) {
+				console.log("command failed: " + cmd[0] + " not valid for type: " + entity.type);
+			} else {
+				//console.log("command failed: " + cmd);
+			}
 		}
 	}
-	entity._sendMsg("I did not understand that command.");
+
+	if (!executed) entity._sendMsg("I did not understand that command.");
+	else {
+		if (entity.suggestionsMadeToMe.length > 0) {
+			console.log("\tcomparing command to suggestions...");
+			var cmdstr = "";
+			for (var i = 0; i < cmd.length; i++) {
+				cmdstr += cmd[i];
+				if (i < cmd.length - 1) cmdstr += " ";
+			}
+			cmdstr = cmdstr.trim();
+
+			for (var i = 0; i < entity.suggestionsMadeToMe.length; i++) {
+				if (cmdstr.toLowerCase() == entity.suggestionsMadeToMe[i].instruction.toLowerCase()) {
+					//they obeyed!
+					entity.followSuggestion(entity.suggestionsMadeToMe[i]);
+					//entity._sendMsg("You feel tingles down you spine after following " + entity.suggestionsMadeToMe[i].suggester.name + "'s suggestion.");
+					break;
+				}
+			}
+		}
+		
+	}
+
+//	console.log("\tfinished executing command.");
 	//if (cmd == null) {}
 }
 
 function cmd_stat(entity, args) {
 	if (args.length < 2) {
 		entity._sendMsg("Usage: @stat <entity>");
+		entity._sendMsg("       @stat <entity> <property>");
 		entity._sendMsg("       @stat ^         (to stat the current room/container)");
 		return;
 	}
@@ -462,7 +584,16 @@ function cmd_stat(entity, args) {
 		stat += "  unable to make flatCopy()";
 	} else {
 	//	sys.print(sys.inspect(flatCopy));
-		stat += JSON.stringify(flatCopy,null,2);
+		if (args.length == 2) {
+			stat += JSON.stringify(flatCopy,null,2);
+		} else if (args.length == 3) {
+			if (flatCopy.hasOwnProperty(args[2])) {
+				stat += flatCopy.getUpperCaseAction() + "'s [" + args[2] + "]  id: " + target._id;
+				stat += "  " + JSON.stringify(flatCopy[args[2]], null, 2);
+			} else {
+				stat += flatCopy.getUpperCaseAction() + " does not have that property.";
+			}
+		}
 	}
 	entity._sendMsg(stat);
 }
@@ -502,6 +633,10 @@ function cmd_follow(entity, args) {
 }
 
 function cmd_look(entity, args) {
+	if (entity.getPosition() == "sleeping") {
+		entity._sendMsg("You can't! You're asleep!");
+		return;
+	}
 	if (args.length == 1) {
 		var result = "";
 		//console.log("executing cmd_look at room");
@@ -513,6 +648,15 @@ function cmd_look(entity, args) {
 			if (entity.type == "character" && entity.editmode == 1) {
 				//entity.sendMsg(room.descAction + " [" + room._id + "]");
 				result += room.descAction + " [" + room._id + "]";
+				if (room.hasOwnProperty("zone") && room.zone != null && room.zone.hasOwnProperty("_id")) {
+					result += " zone[" + room.zone._id + "]";
+				} else if (room.hasOwnProperty("zone") && room.zone != null) {
+					result += " zone[defined, but does not have _id]";
+				} else if (room.hasOwnProperty("zoneID")) {
+					result += " zone[" + room.zoneID + ", unlinked]";
+				} else {
+					result += " zone[undefined]";
+				}
 			} else {
 				//entity.sendMsg(room.descAction);
 				result += room.descAction;
@@ -574,7 +718,21 @@ function cmd_look(entity, args) {
 			if (target.hasOwnProperty("type") && target.type == "character") {
 				target._sendMsg(entity.getUpperCaseAction() + " looks at you.");
 			}
-			var result = target.descLook + "\n";
+
+			var result = "";
+			
+			if (entity.isBuilder()) {
+				if (target.hasOwnProperty("_id")) {
+					if (target.hasOwnProperty("prototype") && target.prototype == true) result += "[prototype ";
+					else result += "[";
+					result += "id: " + target._id + " ]\n";
+					if (target.hasOwnProperty("prototypePointerID")) result += "[prototype id: " + target.prototypePointerID + " ]\n";
+				}
+				if (target.hasOwnProperty("type")) result += "[type: " + target.type + " ]\n";
+			}
+
+			result += target.descLook + "\n";
+			result += target.getUpperCaseAction() + " looks " + target.getHealthText() + "\n";
 			var wearPositions = playermanager.getWearablePositions();
 
 			if (target.hasOwnProperty("contents") && target.contents.length > 0) {
@@ -583,9 +741,16 @@ function cmd_look(entity, args) {
 						var obj = target.contents[i];
 						if (obj.wornPosition == wearPositions[j]) {
 							result += "  <" + wearPositions[j] + ">  " + obj.descAction + "\n"; 
-						}
+						} 
 					}
 				}
+				/*
+				result+="Carrying:\n";
+				for (var i = 0; i < target.contents.length; i++) {
+					var obj = target.contents[i];
+					result += "  " + obj.descAction + " wp: "+obj.wornPosition+"\n"; 
+				}
+				*/
 			}
 			entity._sendMsg(result);
 		}
@@ -666,6 +831,15 @@ function cmd_dig(entity, args) {
 	} else if (args.length  == 3) {
 		//create a room in a given direction
 		var newRoom = playermanager.createNewRoom();
+        
+        if (!entity.hasOwnProperty("editingZone") || entity.editingZone == null) {
+            //not assigning the new room to a zone
+        } else {
+            var zone = entity.editingZone;
+            newRoom.zone = zone;
+            newRoom.zoneID = zone._id;
+        }
+        
 		var newPortal = playermanager.createNewPortal();
 		
 		newPortal.A = entity.container;
@@ -726,7 +900,19 @@ function cmd_help(entity, args) {
 }
 
 function cmd_say(entity, args) {
-	if (entity.container == null) return;
+	if (entity.container == null) {
+		entity._sendMsg("You do not appear to be anywhere, so I'm not sure what speaking would accomplish.");
+		return;
+	}
+	if (args.length <= 1) {
+		entity._sendMsg("Exactly what do you want to say?");
+		return;
+	}
+	if (entity.getPosition() == "sleeping" ) {
+		entity._sendMsg("You can't! You're " + entity.getPosition() + "!");
+		return;
+	}
+
 	var msg = "";
 	for (var i = 1; i < args.length; i++) {
 		msg += args[i];
@@ -739,6 +925,12 @@ function cmd_say(entity, args) {
 
 function cmd_emote(entity, args) {
 	if (entity.container == null) return;
+	if (args.length <= 1) {
+		entity._sendMsg("Usage: emote <action>");
+		entity._sendMsg("e.g., \"emote sits down.\" would appear to others as <yourname> sits down.");
+		return;
+	}
+
 	var msg = "";
 	for (var i = 1; i < args.length; i++) {
 		msg += args[i];
@@ -831,7 +1023,11 @@ function cmd_setpassword(entity, args) {
 
 function cmd_saveself(entity, args) {
 	//make sure the keywords are present in the short description
-	
+	if (!entity.hasOwnProperty("donotsave")) {
+		entity._sendMsg("Saving...");
+		playermanager.saveEntity(entity);
+		return;
+	}
 	var words_in_desc = entity.descAction.split(" ");
 	if (words_in_desc.length < 2) {
 		entity._sendMsg("Your short description must be at least two words before you can save your character.");
@@ -839,10 +1035,12 @@ function cmd_saveself(entity, args) {
 	}
 	var num_words_over_one_letter = 0;
 	var words_over_one_letter = [];
+	var words_that_dont_count = ["an","a","the","this","are","is","one","on","that","way","like","as","it","in","within","with","below","above",
+					"inside","out","outside","by"];
 	console.log("@saveself:");
 	console.log("\twords over one letter:");
 	for (var i = 0; i < words_in_desc.length; i++) {
-		if (words_in_desc[i].length > 1) {
+		if (words_in_desc[i].length > 1 && words_that_dont_count.indexOf(words_in_desc[i]) < 0) {
 			num_words_over_one_letter++;
 			words_over_one_letter.push(words_in_desc[i]);
 			console.log("\t\t" + words_in_desc[i]);
@@ -857,46 +1055,42 @@ function cmd_saveself(entity, args) {
 		return;
 	}
 	var num_keywords_in_shortdesc = 0;
-	for (var i = 0; i < words_over_one_letter; i++) {
-		if (entity.keywords.indexOf(words_over_one_letter[i]) > 0) {
-			if (words_over_one_letter[i] == "the") continue;
-			if (words_over_one_letter[i] == "an") continue;
-			if (words_over_one_letter[i] == "are") continue;
-			if (words_over_one_letter[i] == "is") continue;
-			if (words_over_one_letter[i] == "one") continue;
-			if (words_over_one_letter[i] == "on") continue;
-			if (words_over_one_letter[i] == "this") continue;
-			if (words_over_one_letter[i] == "that") continue;
-			if (words_over_one_letter[i] == "way") continue;
-			if (words_over_one_letter[i] == "like") continue;
-			if (words_over_one_letter[i] == "as") continue;
-			if (words_over_one_letter[i] == "it") continue;
-			if (words_over_one_letter[i] == "in") continue;
-			if (words_over_one_letter[i] == "within") continue;
-			if (words_over_one_letter[i] == "with") continue;
-			if (words_over_one_letter[i] == "below") continue;
-			if (words_over_one_letter[i] == "above") continue;
-			if (words_over_one_letter[i] == "inside") continue;
-			if (words_over_one_letter[i] == "out") continue;
-			if (words_over_one_letter[i] == "outside") continue;
+	for (var i = 0; i < words_over_one_letter.length; i++) {
+		if (entity.keywords.indexOf(words_over_one_letter[i]) >= 0) {
 			num_keywords_in_shortdesc++;
 		}
 	}
 	if (entity.hasOwnProperty("donotsave") && entity.donotsave == true) {
 		if (num_keywords_in_shortdesc < 1 || num_keywords_in_shortdesc < num_words_over_one_letter - 1) {
 			console.log("@saveself:");
-			console.log("\tnum_keywords_in_shortdesc: " + num_keywords_in_short_desc);
+			console.log("\tnum_keywords_in_shortdesc: " + num_keywords_in_shortdesc);
 			console.log("\tnum_words_over_one_letter: " + num_words_over_one_letter);
+			entity._sendMsg("Your short description: [" + entity.descAction + "]");
+			entity._sendMsg("Your room description:  [" + entity.descRoom   + "]");
+			entity._sendMsg("Your keywords: " + entity.keywords);
+			entity._sendMsg("Number of keywords in short description:   " + num_keywords_in_shortdesc);
+			entity._sendMsg("Number of words in description that count: " + num_words_over_one_letter);
 			entity._sendMsg("There does not appear to be enough in common between your short description and your keywords to save your character. Please try again.");
 			return;
 		}
 	}
+	console.log("@saveself:");
+	console.log("\tnum_keywords_in_shortdesc: " + num_keywords_in_shortdesc);
+	console.log("\tnum_words_over_one_letter: " + num_words_over_one_letter);
+	entity._sendMsg("Your short description: [" + entity.descAction + "]");
+	entity._sendMsg("Your room description:  [" + entity.descRoom   + "]");
+	entity._sendMsg("Your keywords: " + entity.keywords);
+	entity._sendMsg("Number of keywords in short description:   " + num_keywords_in_shortdesc);
+	entity._sendMsg("Number of words in description that count: " + num_words_over_one_letter);
+	entity._sendMsg("Saving character...");
+	entity.level = 1;
+
 	if (entity.hasOwnProperty("donotsave")) delete entity.donotsave;
 	playermanager.saveEntity(entity);
 	//var flat = entity.makeFlatCopy();
 	//console.log("flatCopy:");
 	//sys.print(sys.inspect(flat));
-	entity._sendMsg("Saving...");
+	entity._sendMsg("Done.");
 }
 
 function cmd_savegame(entity, args) {
@@ -916,7 +1110,10 @@ function cmd_who(entity, args) {
 }
 
 function cmd_shutdown(entity, args) {
+	irc.sendToMainChannel("Shutting down the server in 10 seconds!");
+
 	console.log("shutdown command received.");
+	
 	setTimeout(function disconnect() {
 		console.log("disconnecting...");
 		irc.disconnect();
@@ -929,6 +1126,13 @@ function cmd_shutdown(entity, args) {
 }
 
 function cmd_editmode(entity, args) {
+    if (entity.getCurrentZone() == null) {
+        entity._sendMsg("This room does not belong to a zone yet, please use @assignzone to assign it to a zone.");
+        return;
+    } else if (entity.getCurrentZone().hasOwnProperty("_id") && !entity.canEditZone(entity.getCurrentZone()._id)) {
+        entity._sendMsg("Sorry, you do not have permission to edit objects in this zone.");
+        return;
+    }
 	if (!entity.hasOwnProperty("editmode")) {
 		entity.editmode = 1;
 	} else if (entity.editmode == 0) entity.editmode = 1;
@@ -938,6 +1142,13 @@ function cmd_editmode(entity, args) {
 }
 
 function cmd_editroomname(entity, args) {
+    if (entity.getCurrentZone() == null) {
+        entity._sendMsg("This room does not belong to a zone yet, please use @assignzone to assign it to a zone.");
+        return;
+    } else if (entity.getCurrentZone().hasOwnProperty("_id") && !entity.canEditZone(entity.getCurrentZone()._id)) {
+        entity._sendMsg("Sorry, you do not have permission to edit objects in this zone.");
+        return;
+    }
 	var msg = "";
 	for (var i = 1; i < args.length; i++) {
 		msg += args[i];
@@ -948,6 +1159,13 @@ function cmd_editroomname(entity, args) {
 }
 
 function cmd_editroomdesc(entity, args) {
+    if (entity.getCurrentZone() == null) {
+        entity._sendMsg("This room does not belong to a zone yet, please use @assignzone to assign it to a zone.");
+        return;
+    } else if (entity.getCurrentZone().hasOwnProperty("_id") && !entity.canEditZone(entity.getCurrentZone()._id)) {
+        entity._sendMsg("Sorry, you do not have permission to edit objects in this zone.");
+        return;
+    }
 	var msg = "";
 	for (var i = 1; i < args.length; i++) {
 		msg += args[i];
@@ -968,6 +1186,8 @@ function cmd_createzone(entity, args) {
 	
 		zone.name = args[1];
 		zone.descAction = args[1];
+		entity.editingZone = zone;
+
 		console.log("createzone:");
 		console.log("\tpre entities.length =" + playermanager.getEntities().length);
 		playermanager.addEntityToGame(zone);
@@ -979,31 +1199,42 @@ function cmd_createzone(entity, args) {
 }
 
 function cmd_assigntozone(entity, args) {
-	if (args.length != 2) {
-		entity._sendMsg("Usage: @assigntozone <zonename>");
+	var zone = null;
+	if (!entity.hasOwnProperty("editingZone") || entity.editingZone == null) {
+		entity._sendMsg("You are currently not editing any zones. Type @listzones and @editzone <zoneid> to select a zone for editing.");
 		return;
-	}
-	if (entity.container == null) {
-		entity._sendMsg("Um, you do not appear to be occupying a room.");
-		return;
-	}
-	if (!entity.container.hasOwnProperty("_id") || entity.container.type != "room") {
-		entity._sendMsg("It looks like the room you're in does not have an _id.  Maybe it isn't a room?");
-		return;
-	}
+	} else zone = entity.editingZone;
 
-	var room = entity.container;
-	var entities = playermanager.getEntities();
-	
-	for (var i = 0; i < entities.length; i++) {
-		if (entities[i].type == "zone" && entities[i].name == args[1]) {
-			entities[i].contents.push(room);
-			room.zone = entities[i];
-			room.zoneID = entities[i]._id;
-			entity._sendMsg("Room " + room._id + " added to zone " + entities[i].name + " with _id=" + entities[i]._id);
-			break;
-		}
+	if (zone == null && args.length != 2) {
+		entity._sendMsg("Usage: @assigntozone <entityid>  OR use @editzone first to select a zone.");
+		return;
 	}
+	
+	var target;
+    
+    if (args.length == 2) target = playermanager.getEntityWithID(args[1]);
+    else target = entity.container;
+    
+	if (target == null) {
+		entity._sendMsg("Cannot find an entity with that id.");
+		return;
+	}
+	
+    if (!entity.canEditZone(zone._id)) {
+        entity._sendMsg("Sorry, you do not have permission to edit objects in this zone.");
+        return;
+    }
+    
+    if (!entity.canEditZone(target.zone._id)) {
+        entity._sendMsg("Sorry, you do not have permission to edit objects in this zone.");
+        return;
+    }
+    
+	target.zone = zone;
+	target.zoneID = zone._id;
+	if (!zone.contents.indexOf(target)) zone.contents.push(target);
+
+	entity._sendMsg(target.getUpperCaseAction() + " assigned to zone " + target.zone.name + "/" + target.zone._id);
 }
 
 function cmd_listzones(entity, args) {
@@ -1018,43 +1249,61 @@ function cmd_listzones(entity, args) {
 	entity._sendMsg(result);
 }
 
-function cmd_listroomsinzone(entity, args) {
+function cmd_editzone(entity, args) {
 	var zone = null;
-	var entities = playermanager.getEntities();
-	var result = "";
-	if (args.length > 2) {
-		result += "Usage: @listroomsinzone [zone]";
-		result += "If no zone is specified, the current zone you're in will be used.";
-		return;
-	}
-
-	if (args.length == 1) {
-		var room = entity.container;
-		if (room == null || !room.hasOwnProperty("zone") || room.zone == null) {
-			entity._sendMsg("This room does not appear to have been assigned to a zone, so I don't know what zone you're talking about. Try specifying a zone name.");
+	if (args.length != 2) {
+		if (entity.hasOwnProperty("container") && entity.container != null && entity.container.hasOwnProperty("zone") && entity.container.zone != null) {
+			zone = entity.container.zone;
+		} else {
+			entity._sendMsg("Usage: @editzone <zoneid>  - use @listzones to get a list of zones (the current room does not appear to have been assigned to a zone).");
 			return;
 		}
-		
-		zone = room.zone;
 	}
+	var zoneid = args[1];
+	if (args.length == 2 && zone == null) zone = playermanager.getEntityWithID(zoneid);
 
-	if (args.length == 2) {
-		for (var i = 0; i < entities.length; i++) {
-			if (entities[i].type == "zone" && entities[i].name == args[1]) {
-				zone = entities[i];
-			}
-		}
-	}
-	if (zone == null) {
-		entity._sendMsg("No zone found by that name.");
+	if (zone == null || zone.type != "zone") {
+		entity._sendMsg("There does not appear to be a zone with that id.");
 		return;
 	}
+    if (!entity.canEditZone(zone._id)) {
+        entity._sendMsg("Sorry, you do not have permission to edit this zone.");
+        return;
+    }
+    
+	entity.editingZone = zone;
+	entity._sendMsg("You are now editing " + zone.name + ", id: " + zone._id);
+}
+function cmd_listinzone(entity, args) {
+	var zone = null;
+	if (!entity.hasOwnProperty("editingZone") || entity.editingZone == null) {
+		entity._sendMsg("You are currently not editing any zones. Type @listzones and @editzone <zoneid> to select a zone for editing.");
+		return;
+	} else zone = entity.editingZone;
 	
+	var searchType = "";
+
+	if (args.length != 2) searchType = "any";
+	else searchType = args[1].toLowerCase();
+
+	var entities = playermanager.getEntities();
+	var result = "";
 	
-	result = "Rooms in current zone (" + zone.name + "/" + zone._id + ")\n";
+	result = "Entities of type " + searchType + " in current zone (" + zone.name + "/" + zone._id + ")\n";
+	if (searchType == "mobprototype") result += "  (b/d/s)lvl    - max# - id                   - descAction\n";
 	for (var i = 0; i < entities.length; i++) {
-		if (entities[i].hasOwnProperty("zone") && entities[i].zone == zone) {
-			result += "  " + entities[i].descAction + " - " + entities[i]._id + "\n";
+		if (entities[i].hasOwnProperty("zone") && entities[i].zone == zone && searchType == "any") {
+			if (entities[i].type == "mob" || entities[i].type == "object") continue;
+			result += "  " + entities[i].type + " - " + entities[i].descAction + " - " + entities[i]._id + "\n";
+		} else if (entities[i].hasOwnProperty("zone") && entities[i].zone == zone && entities[i].type == searchType) {
+			result += "  ";
+			if (entities[i].type == "mobprototype") {
+				result += entities[i].battle.level + "/" + entities[i].dominance.level + "/" + entities[i].submission.level + "           ";
+				result += entities[i].maxMobs + "      ";
+			}
+			result += entities[i]._id + " ";
+			result += entities[i].descAction;
+			result += "\n";
 		}
 	}
 	entity._sendMsg(result);
@@ -1129,6 +1378,11 @@ function cmd_goto(entity, args) {
 }
 
 function cmd_inventory(entity, args) {
+	if (entity.getPosition() == "sleeping" ) {
+		entity._sendMsg("You can't! You're " + entity.getPosition() + "!");
+		return;
+	}
+
 	if (!entity.hasOwnProperty("contents")) {
 		entity._sendMsg("Weird, you do not appear to be capable of carrying anything.");
 		return;
@@ -1153,7 +1407,9 @@ function cmd_inventory(entity, args) {
 	for (var i = 0; i < entity.contents.length; i++) {
 		if (entity.contents[i].wornPosition == "none" || !entity.contents[i].hasOwnProperty("wornPosition") ) {
 			result += "  " + entity.contents[i].descAction;
-			if (entity.contents[i].hasOwnProperty("prototype")) result += " [prototype]";
+			if (entity.contents[i].hasOwnProperty("prototype")) 
+				result += " [prototype: "+
+					entity.contents[i]._id +"]";
 			result += "\n";
 		}
 	}
@@ -1163,9 +1419,22 @@ function cmd_inventory(entity, args) {
 }
 
 function cmd_createmobprototype(entity, args) {
+	var zone = null;
+	if (!entity.hasOwnProperty("editingZone") || entity.editingZone == null) {
+		entity._sendMsg("You are currently not editing any zones. Type @listzones and @editzone <zoneid> to select a zone for editing.");
+		return;
+	} else zone = entity.editingZone;
+
+    if (!entity.canEditZone(zone._id)) {
+        entity._sendMsg("Sorry, you do not have permission to edit mobs in this zone.");
+        return;
+    }
+    
 	if (args.length  == 1) {
 		var newMob = playermanager.createNewMobPrototype(entity);
 		if (newMob != null) {
+			newMob.zone = zone;
+			newMob.zoneID = zone._id;
 			entity.container.sendMsgToContents(entity, newMob, "utter an incantation as", "utters an incantation as", "suddenly appears");
 			return;
 		} else {
@@ -1179,6 +1448,10 @@ function cmd_createmobprototype(entity, args) {
 			var p = entities[i];
 			if (p.hasOwnProperty("type") && p.type == "mobprototype" && p.hasOwnProperty("_id") && p._id == id) {
 				prototype = p;
+				if (zone != p.zone) {
+					entity._sendMsg("That mob does not belong to your current zone. You are currently editing " + zone.name + "/" + zone._id + " but that mob belongs to " + prototype.zone.name + "/" + prototype.zone._id + ". Use @editzone to change your current zone.");
+					return;
+				}
 			}
 		}
 		if (prototype == null) {
@@ -1205,6 +1478,11 @@ function cmd_drop(entity, args) {
 		entity._sendMsg("Usage: drop <item>");
 		return;
 	}
+	if (entity.getPosition() == "sleeping" ) {
+		entity._sendMsg("You can't! You're " + entity.getPosition() + "!");
+		return;
+	}
+
 	if (entity.container == null) {
 		entity._sendMsg("Umm.. You do not appear to be anywhere, so you can't very well drop something there can you?");
 		return;
@@ -1216,6 +1494,7 @@ function cmd_drop(entity, args) {
 		entity._sendMsg("That doesn't appear to be in your inventory.");
 		return;
 	}
+	
 	target.moveToContainer(entity.container);
 	if (target.container == entity.container) {
 		//entity._sendMsg("You drop " + target.descAction + ".");
@@ -1230,35 +1509,59 @@ function cmd_drop(entity, args) {
 }
 
 function cmd_get(entity, args) {
+	if (entity.getPosition() == "sleeping" ) {
+		entity._sendMsg("You can't! You're " + entity.getPosition() + "!");
+		return;
+	}
+
 	if (args.length == 1) {
+		console.log("\tno keywords provided");
 		entity._sendMsg("Usage: get <item>");
 		return;
 	} else if (args.length == 2) {
+		console.log("\tlooking for " + args[1]);
 		var item = entity.findEntityInRoom(args[1]);
 		if (item == null) {
 			entity._sendMsg("I don't see anything here like that.");
+			console.log("cmd_get: fail, could not find " + args[1]);
 			return;
 		}
 		if (!entity.canCarry(item)) {
 			entity._sendMsg("No silly, you can't have that.");
+			console.log("cmd_get: fail, could not carry");
 			return;
 		}
+		console.log("\ttrying to pick up obj");
+		var isCash = (item.hasOwnProperty("cash") && item.type == "object");
+
 		item.moveToContainer(entity);
-		if (item.container == entity) {
+		if (!isCash && item.container == entity) {
+			console.log("\tsuccessfully picked up item.");
 			//entity._sendMsg("You get " + item.descAction + ".");
-			entity.container.sendMsgToContents(entity, item, "pick up", "picks up", "");
+			if (entity.container.hasOwnProperty("sendMsgToContents"))
+				entity.container.sendMsgToContents(entity, item, "pick up", "picks up", "");
+			console.log("\tentity.contents:");
+			for (var i = 0; i < entity.contents.length; i++) {
+				console.log("\t\t" + entity.contents[i].descAction + " is inside " + entity.contents[i].container.descAction + " _id: " +
+					entity.contents[i].container._id);
+			}
 			//entity.getUpperCaseAction() + " picks up " + item.descAction + ".",entity);
 			//item._sendMsg(entity.getUpperCaseAction() + " picks you up!");
 			return;
-		} else {
+		} else if (!isCash) {
 			entity._sendMsg("Oops. That's didn't work for some reason.");
+			console.log("cmd_get: fail, could not move item to entity's contents for some reason.");
+		} else {
+			//means we picked up some cash
+			if (entity.container.hasOwnProperty("sendMsgToContents"))
+				entity.container.sendMsgToContents(entity, item, "pick up", "picks up", "");
 		}
 	} else if (args.length == 3) {
 	}
 }
 
 function cmd_edit(entity, args) {
-	if (args.length < 4) {
+	if (args.length <= 2) {
 		entity._sendMsg("Usage: @edit <entity> <property> <new value> -- Use @stat to get a list of an entity's properties.");
 		return;
 	}
@@ -1275,12 +1578,23 @@ function cmd_edit(entity, args) {
 			return;
 		}
 	}
-	if (target.hasOwnProperty("level") && target.level >= entity.level && target != entity) {
+    
+    if (target.hasOwnProperty("zone") && target.zone != null && target.zone.hasOwnProperty("_id")) {
+        if (!entity.canEditZone(target.zone._id)) {
+            entity._sendMsg("Sorry, you do not have permission to edit things with zoneid=" + target.zone._id + "/" + target.zone.name);
+            return;
+        }
+    }
+	
+    if (target.hasOwnProperty("level") && target.level >= entity.level && target != entity) {
 		entity._sendMsg("You can't edit anything that is your same level or greater.");
 		return;
 	}
 	var property = args[2];
-	var specialCases = ["keywords","type","_id","addkeyword","setkeyword","prototype","spawnRoomIDs","spawn","wearablePositions","wornPosition"];
+	var specialCases = [
+		"keywords","type","_id","addkeyword","setkeyword","prototype","spawnRoomIDs","spawn","wearablePositions","wornPosition", "spawnObjects",
+		"battle", "dominance", "submission","level","spawnRooms","spawnRoom","spawnroom","chatMessages","cash","copper","gold","silver","platinum",
+		"latinum", "editableZones"];
 	var newValue = "";
 
 	
@@ -1323,11 +1637,97 @@ function cmd_edit(entity, args) {
 			return;
 		} else if (property == "setkeyword") {
 			target.keywords = [];
-			if (target.hasOwnProperty("prototype")) target.keywords.push("prototype");
+			//if (target.hasOwnProperty("prototype")) target.keywords.push("prototype");
 			target.keywords.push(args[3]);
 			entity._sendMsg(target.getUpperCaseAction() + "'s keywords: " + target.keywords + ".");
 			return;
-		} else if (property == "spawnRoomIDs") {
+		} else if (property == "chatMessages") {
+			if (!target.hasOwnProperty("chatMessages")) {
+				entity._sendMsg("That does not appear to have any chat messages.");
+				return;
+			}
+			if (args[3] == "clear") {
+				target.chatMessages = [];
+				entity._sendMsg(target.getUpperCaseAction() + "'s chat messages have been cleared.");
+				return;
+			} else if (args[3] == "add") {
+				if (args.length > 4) {
+					var chatMsg = "";
+					for (var i = 4; i < args.length; i++) chatMsg += args[i] + " ";
+					chatMsg = chatMsg.trim();
+					target.chatMessages.push(chatMsg);
+					entity._sendMsg("\""+chatMsg+"\" has now been added to " + target.descAction + "'s chat messages.");
+					return;
+				}
+			}
+		} else if (property == "editableZones") {
+            if (entity.level < playermanager.Game().levelCoordinator) {
+                entity._sendMsg("You do not have access to edit that property.");
+                return;
+            }
+            //edit <id> editableZones add <zoneid>
+            //edit <id> editableZones clear
+            if (args.length == 4) {
+                if (args[3] == "clear") {
+                    entity._sendMsg(target.getUpperCaseAction() + " editable zones have been cleared.");
+                    return;
+                }
+            } else if (args.length == 5) {
+                if (args[3] == "add") {
+                    var zoneid = args[4];
+                    var zone = playermanager.Game().getEntityWithID(zoneid);
+                    if (zone == null){
+                        entity._sendMsg("There doesn't appear to be a zone with that id. Double check it with @listzones?");
+                        return;
+                    }
+                    if (!target.hasOwnProperty("editableZones")) target.editableZones = [];
+                    target.editableZones.push(zoneid);
+                    var result = target.getUpperCaseAction() + " can now edit the following zones:\n";
+                    for (var i = 0; i < target.editableZones.length; i++) {
+                        var z = playermanager.Game().getEntityWithID(target.editableZones[i]);
+                        var zname = "undefined";
+                        if (z != null) zname = z.name;
+                        result += (i+1) + ". " + target.editableZones[i] + "/" + zname + "\n";
+                    }
+                    if (target.editableZones.length == 0) result += "  none\n";
+                    entity._sendMsg(result);
+                    return;
+                } else if (args[3] == "del") {
+                    var zoneid = args[4];
+                    if (target.editableZones.indexOf(zoneid) != -1) {
+                        target.editableZones.splice(target.editableZones.indexOf(zoneid),1);
+                        var result = target.getUpperCaseAction() + " can now edit the following zones:\n";
+                        for (var i = 0; i < target.editableZones.length; i++) {
+                            var z = playermanager.Game().getEntityWithID(target.editableZones[i]);
+                            var zname = "undefined";
+                            if (z != null) zname = z.name;
+                            result += (i+1) + ". " + target.editableZones[i] + "/" + zname + "\n";
+                        }
+                        if (target.editableZones.length == 0) result += "  none\n";
+                        entity._sendMsg(result);
+                        return;
+                    } else {
+                        entity._sendMsg(target.getUpperCaseAction() + " does not appear to be able to edit that zone.");
+                        return;
+                    }
+                }
+            }
+            entity._sendMsg("Usage: @edit <target> editableZones <add/del/clear> [zoneid]");
+            return;
+        } else if (property == "cash" || property == "copper" || property == "silver" || property == "gold" || property == "platinum" || property == "latinum") {
+			if (!target.hasOwnProperty("cash")) {
+				entity._sendMsg(target.getUpperCaseAction() + " does not have property 'cash'.");
+				return;
+			}
+			if (property == "cash") {
+				entity._sendMsg("Usage: @edit <id> [copper/silver/gold/etc.] [amount]");
+				return;
+			} else if (args.length == 4) {
+				target.cash[property] = Number(args[3]);
+				entity._sendMsg(target.getUpperCaseAction() + "'s " + property + " has been set to " + Number(args[3]));
+				return;
+			}
+		} else if (property.toLowerCase() == "spawnroomids" || property.toLowerCase() == "spawnrooms" || property.toLowerCase() == "spawnroom") {
 			entity._sendMsg("Use 'spawn addhere' or 'spawn clear'");
 			return;
 		} else if (property == "spawn" && args[3] == "addhere") {
@@ -1361,6 +1761,52 @@ function cmd_edit(entity, args) {
 				if (target.wearablePositions.indexOf("none") != -1) target.wearablePositions.splice(target.wearablePositions.indexOf("none"),1);
 			}
 			return;
+		} else if (property.toLowerCase() == "spawnobjects") {
+			if (args[3] == "add" && (args.length == 6 || args.length == 7)) {
+				var objid = args[4];
+				var wearposition = args[5];
+				var probability = (args.length == 7 ? args[6] : 1.0);
+				target.addSpawnObject(objid, wearposition, probability);
+				entity._sendMsg("Added object at spawn.");
+			} else if (args[3] == "remove" && args.length == 5) {
+				var objid = args[4];
+				target.removeSpawnObject(objid);
+				entity._sendMsg("Removed object from spawnObjects.");
+			} else if (args[3] == "clear") {
+				target.clearSpawnObjects();
+				entity._sendMsg("Spawn objects cleared.");
+			} else {
+				entity._sendMsg("Usage: @edit <mobprototype> spawnObjects add <objid> <wearposition> [probability]");
+				entity._sendMsg("       @edit <mobprototype> spawnObjects remove <objid>");
+				entity._sendMsg("	@edit <mobprototype> spawnObjects clear");
+			}
+			return;
+		} else if (property.toLowerCase() == "battle") {
+			if (args.length == 5 && args[3] == "level") {
+				target.battle.level = Number(args[4]);
+				entity._sendMsg("Battle level set to " + Number(args[4]));
+			} else {
+				entity._sendMsg("Usage: @edit <entity> battle level <newlevel>");
+			}
+			return;
+		} else if (property.toLowerCase() == "dominance") {
+			if (args.length == 5 && args[3] == "level") {
+				target.dominance.level = Number(args[4]);
+				entity._sendMsg("Dominance level set to " + Number(args[4]));
+			} else {
+				entity._sendMsg("Usage: @edit <entity> dominance level <newlevel>");
+			}
+			return;
+		} else if (property.toLowerCase() == "submission") {
+			if (args.length == 5 && args[3] == "level") {
+				target.submission.level = Number(args[4]);
+				entity._sendMsg("Submission level set to " + Number(args[4]));
+			} else {
+				entity._sendMsg("Usage: @edit <entity> submission level <newlevel>");
+			}
+			return;
+		} else if (property.toLowerCase() == "level") {
+			entity._sendMsg("Levels are specified per skill area, currently the three skill areas are battle, dominance, and submission. E.g., Use @edit <mob> dominance level 3");
 		}
 		entity._sendMsg("You are not allowed to change " + target.descAction + "'s " + property + ".");
 	}
@@ -1466,6 +1912,11 @@ function cmd_reify(entity, args) {
 }
 
 function cmd_kill(entity, args) {
+	if (entity.getPosition() == "sleeping" ) {
+		entity._sendMsg("You can't! You're " + entity.getPosition() + "!");
+		return;
+	}
+
 	if (entity.fighting.length > 0) {
 		entity._sendMsg("You are already fighting for your life!");
 		return;
@@ -1483,6 +1934,10 @@ function cmd_kill(entity, args) {
 	if (target.type != "character" && 
 		target.type != "mob") {
 		entity._sendMsg("You can't kill that silly!");
+		return;
+	}
+	if (entity == target) {
+		entity._sendMsg("You cannot attack yourself.");
 		return;
 	}
 
@@ -1527,47 +1982,17 @@ function cmd_listclients(entity, args) {
 	entity._sendMsg(result);
 }
 
-function cmd_listmobsinzone(entity, args) {
-	var zone = null;
-	var entities = playermanager.getEntities();
-	var result = "Prototypes in this zone: ";
-	if (args.length > 2) {
-		result += "Usage: @listroomsinzone [zone]";
-		result += "If no zone is specified, the current zone you're in will be used.";
-		return;
-	}
-
-	if (args.length == 1) {
-		var room = entity.container;
-		if (room == null || !room.hasOwnProperty("zone") || room.zone == null) {
-			entity._sendMsg("This room does not appear to have been assigned to a zone, so I don't know what zone you're talking about. Try specifying a zone name.");
-			return;
-		}
-		
-		zone = room.zone;
-	} else {
-		entity._sendMsg("Currently, this command only works by referencing the zone you're currently inside.");
-		return;
-	}
-	
-	result += zone._id + "\n";
-	var entities = zone.mobPrototypes;
-
-	for (var i = 0; i < entities.length; i++) {
-		if (entities[i].type == "mobprototype") {
-			result += "  " + entities[i].descAction + "  lvl[" + entities[i].level + "] id[" + entities[i]._id + "]\n";
-		 } else {
-		 	result += " ?" + entities[i].descAction + "  lvl[" + entities[i].level + "] id[" + entities[i]._id + "]\n";
-		 }
-	}
-	entity._sendMsg(result);
-}
 
 function cmd_now(entity, args) {
 	entity._sendMsg("Server time (ms): " + Date.now());
 }
 
 function cmd_eat(entity, args) {
+	if (entity.getPosition() == "sleeping" ) {
+		entity._sendMsg("You can't! You're " + entity.getPosition() + "!");
+		return;
+	}
+
 	if (args.length < 2) {
 		entity._sendMsg("So what is it that you would like to eat?");
 		return;
@@ -1579,7 +2004,7 @@ function cmd_eat(entity, args) {
 	}
 	if (entity.level >= playermanager.Game().levelBuilder) {
 		target.container.contents.splice(target.container.contents.indexOf(target,1));
-		target.container == null;
+		target.container = null;
 		entity.container.sendMsgToContents(entity, target, "eat", "eats", "whole");		
 		return;	
 	}
@@ -1591,23 +2016,81 @@ function cmd_score(entity, args) {
 		entity._sendMsg("I don't know what you are.. So, how about no?");
 		return;
 	}
-	var result = "Drives:\n";
+	var result = "";
+	if (entity.hasOwnProperty("drone")) result += "You are currently a mindless drone.\n";
+	if (entity.hasOwnProperty("blindRage")) result += "You are currently in a bind rage!\n";
+	result += "You are level " + entity.level + " and " + entity.age + " tics old.\n"
+	result += "Health: " + entity.getHealthText() + " " + entity.getHP() + "/" + entity.getMaxHP() + "  Ego: " + entity.ego + "/" + entity.maxEgo + "\n";
+	result += "You are currently " + entity.getPosition() + ".\n";
+	result += "Drives:\n";
 	var key;
 	for (key in entity) {
 		var p = entity[key];
 		if (util.isArray(p)) continue;
 		if (p == null) continue;
 		if (p.hasOwnProperty("type") && p.type == "drive") {
-			result += " - " + p.name + ": " + p.value + "\n";
+			var xpProgress = (entity.expToNextLevel(p) * 100 / entity.expTotalThisLevel(p));
+			xpProgress = 100 - Math.round(xpProgress * 100) / 100;
+
+			result += " - " + p.name + ", level " + p.level + ", experience: " + xpProgress + "%\n";
 		}
 	}
+	
+	result += "Current role: ";
+	if (entity.isSwitch()) result += "switch";
+	else if (entity.isDominant()) result += "dominant";
+	else if (entity.isSubmissive()) result += "submissive";
+	result += "\n";
+
+	if (entity.hasOwnProperty("suggestionsMadeToMe")) {
+		if (entity.suggestionsMadeToMe.length > 0) result += "Current Urges:\n";
+		for (var i = 0; i < entity.suggestionsMadeToMe.length; i++) {
+			var age = Math.floor((Date.now() - entity.suggestionsMadeToMe[i].time) / 1000);
+			result += "  You have been feeling an urge to '" + entity.suggestionsMadeToMe[i].instruction + "' for the last " + age + " s\n";
+		}
+	}
+	if (entity.hasOwnProperty("cash")) {
+		var CashTypes = [];
+		for (var commodityType in entity.cash) { if (entity.cash[commodityType] > 0) CashTypes.push(commodityType); }
+		for (var i = 0; i < CashTypes.length; i++) {
+			if (i == 0) result += "You are carrying ";
+			result += entity.cash[CashTypes[i]] + " " + CashTypes[i];
+			if (i == CashTypes.length - 1) result += " coins.\n";
+			else if (i == CashTypes.length - 2) result += ", and ";
+			else result += ", ";
+		}
+	}
+    if (entity.level >= playermanager.Game().levelBuilder && entity.hasOwnProperty("editableZones")) {
+        result += "Zones you have permission to edit:";
+        for (var i = 0; i < entity.editableZones.length; i++) {
+            if (i == 0) result += "\n";
+            result += "  " + entity.editableZones[i] + "\n";
+        }
+        if (entity.level < playermanager.Game().levelCoordinator && entity.editableZones.length == 0) result += "  none.\n";
+        else result += "  all.\n";
+    }
 	entity._sendMsg(result);
 }
 
 function cmd_createobj(entity, args) {
+	var zone = null;
+	if (!entity.hasOwnProperty("editingZone") || entity.editingZone == null) {
+		entity._sendMsg("You are currently not editing any zones. Type @listzones and @editzone <zoneid> to select a zone for editing.");
+		return;
+	} else zone = entity.editingZone;
+
+    if (!entity.canEditZone(zone._id)) {
+        entity._sendMsg("Sorry, you do not have permission to edit objects in this zone.");
+        return;
+    }
+    
 	if (args.length  == 1) {
 		var newObj = playermanager.createNewObjPrototype(entity);
 		if (newObj != null) {
+			if (newObj.zone != zone) {
+				entity._sendMsg(newObj.getUpperCaseAction() + " belongs to " + newObj.zone.name + "/" + newObj.zone._id + " but you are editing " + zone.name + "/" + zone._id + ". Use @editzone to change your current zone.");
+				return;
+			}
 			entity.container.sendMsgToContents(entity, newObj, "utter an incantation as", "utters an incantation as", "suddenly appears");
 			return;
 		} else {
@@ -1644,6 +2127,11 @@ function cmd_createobj(entity, args) {
 }
 
 function cmd_wear(entity, args) {
+	if (entity.getPosition() == "sleeping" ) {
+		entity._sendMsg("You can't! You're " + entity.getPosition() + "!");
+		return;
+	}
+
 	if (args.length == 1) {
 		entity._sendMsg("Well, what do you want to wear?");
 		return;
@@ -1680,6 +2168,11 @@ function cmd_remove(entity, args) {
 		entity._sendMsg("Well, what do you want to wear?");
 		return;
 	}
+	if (entity.getPosition() == "sleeping" ) {
+		entity._sendMsg("You can't! You're " + entity.getPosition() + "!");
+		return;
+	}
+
 	var target = entity.findEntityFromInventory(args[1]);
 	if (target == null) {
 		entity._sendMsg("You don't see anything like that around here.");
@@ -1695,4 +2188,312 @@ function cmd_remove(entity, args) {
 	}
 	target.wornPosition = "none";
 	entity.container.sendMsgToContents(entity, target, "stop using", "stops using", "");
+}
+
+function cmd_suggest(entity, args) {
+	if (entity.getPosition() == "sleeping" ) {
+		entity._sendMsg("You can't! You're " + entity.getPosition() + "!");
+		return;
+	}
+
+	if (args.length < 3) {
+		entity._sendMsg("Usage: suggest <character> <command>");
+		return;
+	}
+	var target = entity.findEntityWithinReach(args[1]);
+	if (target == null) {
+		entity._sendMsg("You do not see anyone like that here.");
+		return;
+	}
+	var command = "";
+	if (args.length >= 3) {
+		for (var i = 2; i < args.length; i++) {
+			command += args[i];
+			if (i < args.length-1) command += " ";
+		}
+	}
+	command = command.trim();
+	
+	var outcome = entity.compareEgos(target);
+	if (outcome != null && outcome.hasOwnProperty("winner")) {
+		if (outcome.winner == entity) {
+			if (entity.sendSuggestion(target, command) == true) {	
+				entity._sendMsg("You suggest " + target.descAction + " to '" + command + "'");
+				entity.container.sendToEveryoneExcept([entity,target],entity.getUpperCaseAction() + " suggests " + target.descAction + ", \"" + command + "\"");
+				//entity.container.sendMsgToContents(entity, target, "suggest something to", "suggests something to","");
+			} else {
+				entity._sendMsg("Your suggestion somehow failed.");
+			}
+		} else if (outcome.winner = target) {
+			entity.container.sendMsgToContents(entity, target, "try in vain to influence", "tries in vain to influence", "");
+		} else {
+			//no draw
+			entity.container.sendMsgToContents(entity, target, "try in vain to influence", "tries in vain to influence", "");
+
+		}
+	} else {
+		entity._sendMsg("I'm not sure why, but that didn't work.");
+	}
+	
+}
+
+function cmd_testexp(entity, args) {
+	entity._sendMsg("level, required exp:");
+	for (var i = 0; i < 55; i++) {
+		var drive = {level: i, experience: 0};
+		entity._sendMsg("  " + i + " " + entity.expToNextLevel(drive));
+	}
+}
+
+function findStore(entity) {
+	if (entity.hasOwnProperty("container") &&
+		entity.container != null &&
+		entity.container.hasOwnProperty("contents") &&
+		entity.container.contents.length > 1) {
+			var room = entity.container;
+			for (var i = 0; i < room.contents.length; i++) {
+				var possibleStore = room.contents[i];
+				if (possibleStore.hasOwnProperty("store") && possibleStore.store) return possibleStore;
+			}
+			return null;
+		} else return null;
+}
+
+function cmd_storelist(entity, args) {
+	if (entity.getPosition() == "sleeping" ) {
+		entity._sendMsg("You can't! You're " + entity.getPosition() + "!");
+		return;
+	}
+
+	var store = findStore(entity);
+	if (store == null) {
+		entity._sendMsg("You don't see any trading going on around here.");
+		return;
+	}
+	if (!store.hasOwnProperty("contents") || store.contents.length <= 0) {
+		entity._sendMsg(store.getUpperCaseAction() + " says, \"Sorry mate, I'm all sold out today. Meet me here on the morrow, and might be I have something for you to spend ya coppers on.\"");
+		return;
+	}
+	var result = store.getUpperCaseAction() + " presents some wares:\n";
+	for (var i = 0; i < store.contents.length; i++) {
+		var item = store.contents[i];
+		var cost = 15;
+		if (item.hasOwnProperty("cost")) cost = item.cost;
+		if (store.hasOwnProperty("sellPriceAdjustment")) cost = Math.floor(cost * store.sellPriceAdjustment);
+		result += i + ". " + item.getUpperCaseAction() + ", " + cost + " coppers\n";
+	}
+	entity._sendMsg(result);
+}
+function cmd_storesell(entity, args) {
+	if (entity.getPosition() == "sleeping" ) {
+		entity._sendMsg("You can't! You're " + entity.getPosition() + "!");
+		return;
+	}
+
+	var store = findStore(entity);
+	if (store == null) {
+		entity._sendMsg("You don't see any trading going on around here.");
+		return;
+	}
+	if (!store.hasOwnProperty("cash") || store.returnCashValueInCoppers() <= 0) {
+		entity._sendMsg(store.getUpperCaseAction() + " says, \"Sorry mate, I'm all out of copper for today.\"");
+		return;
+	}
+	if (args.length < 2) {
+		entity._sendMsg("Usage: sell <item>");
+		return;
+	}
+	var item = entity.findEntityFromInventory(args[1]);
+	if (item == null) {
+		entity._sendMsg("It doesn't look like you actually have one of those to sell.");
+		return;
+	}
+	var storeCoppers = 0;
+	var cost = 0;
+	if (item.hasOwnProperty("cost")) cost = Math.floor(item.cost * store.purchasePriceAdjustment);
+	if (cost <= 0) {
+		entity._sendMsg(store.getUpperCaseAction() + " scoffs, \"What do you expect me to do with that? Give it away?\"");
+		return;
+	}
+	if (store.hasOwnProperty("cash")) storeCoppers = store.returnCashValueInCoppers();
+
+	if (storeCoppers >= cost) {
+		var newBalanceStore = store.convertCoppersToCommodities(store.returnCashValueInCoppers() - cost);
+		var newBalancePlayer = entity.convertCoppersToCommodities(entity.returnCashValueInCoppers() + cost);
+		store.cash = newBalanceStore;
+		entity.cash = newBalancePlayer;
+		entity.container.sendToEveryoneExcept([entity,store], entity.getUpperCaseAction() + " sells " + item.descAction + " to " + store.descAction + ".");
+		entity._sendMsg("You sell " + item.descAction + " to " + store.descAction + ".");
+		store._sendMsg(entity.getUpperCaseAction() + " sells " + item.descAction + " to you.");
+		item.moveToContainer(store);
+	} else {
+		entity._sendMsg(store.getUpperCaseAction() + " shakes a head, \"Woo, sorry, I can't afford one of those.\"");
+		return;
+	}
+
+
+}
+function cmd_storebuy(entity, args) {
+	if (entity.getPosition() == "sleeping" ) {
+		entity._sendMsg("You can't! You're " + entity.getPosition() + "!");
+		return;
+	}
+
+	var store = findStore(entity);
+	if (store == null) {
+		entity._sendMsg("You don't see any trading going on around here.");
+		return;
+	}
+	if (args.length < 2) {
+		entity._sendMsg("Usage: buy <item_number>");
+		return;
+	}
+	var itemNumber = Number(args[1]);
+	if (itemNumber < 0 || itemNumber >= store.contents.length) {
+		entity._sendMsg(store.getUpperCaseAction() + " says, \"Look here, mate! You wanna mess with somebody, go find that mustardy pig in the forest everyone's been yapping about, but don't waste my time.\"");
+		return;
+	}
+	var item = store.contents[itemNumber];
+	if (item == undefined) {
+		entity._sendMsg("That's not a valid option.");
+		return;
+	}
+	var playerCoppers = 0;
+	var cost = 0;
+	if (item.hasOwnProperty("cost")) cost = Math.floor(item.cost * store.sellPriceAdjustment);
+	if (cost == 0) {
+		entity._sendMsg(store.getUpperCaseAction() + " scoffs, \"What do I look like? A fool? I wouldn't trade this morning's turd for one of those.\"");
+		return;
+	}
+	if (entity.hasOwnProperty("cash")) playerCoppers = entity.returnCashValueInCoppers();
+
+	if (playerCoppers >= cost) {
+		console.log("buy");
+		console.log("\titem.cost=" + item.cost);
+		console.log("\titem.cost (w sellpriceadj)   =" + cost);
+		console.log("\told store balance (commodity)=" + JSON.stringify(store.cash));
+		console.log("\told store balance (copper)   =" + store.returnCashValueInCoppers());
+		console.log("\tnewStoreBalance (copper)     =" + (store.returnCashValueInCoppers() + cost));
+		
+		var newBalanceStore = store.convertCoppersToCommodities(store.returnCashValueInCoppers() + cost);
+		var newBalancePlayer = entity.convertCoppersToCommodities(entity.returnCashValueInCoppers() - cost);
+		store.cash = newBalanceStore;
+		console.log("\tnewStoreBalance (commodity)  =" + JSON.stringify(store.cash));
+		entity.cash = newBalancePlayer;
+		entity.container.sendToEveryoneExcept([entity,store], entity.getUpperCaseAction() + " buys " + item.descAction + " from " + store.descAction + ".");
+		entity._sendMsg("You buy " + item.descAction + " from " + store.descAction + ".");
+		store._sendMsg(entity.getUpperCaseAction() + " buys " + item.descAction + " from you.");
+		item.moveToContainer(entity);
+	} else {
+		entity._sendMsg(store.getUpperCaseAction() + " looks at your wallet and chuckles, \"You ain't got enuf for that one.\"");
+		return;
+	}
+}
+
+function cmd_consider(entity, args) {
+	if (entity.getPosition() == "sleeping" ) {
+		entity._sendMsg("You can't! You're " + entity.getPosition() + "!");
+		return;
+	}
+
+	if (args.length <= 1) {
+		entity._sendMsg("Usage: consider <target>");
+		return;
+	}
+	var target = entity.findEntityWithinReach(args[1]);
+	if (target == null) {
+		entity._sendMsg("You do not see anyone like that here.");
+		return;
+	}
+	
+	var result = "You consider " + target.descAction + ":\n";
+	var drive;
+	for (drive in entity) {
+		var p = entity[drive];
+		if (util.isArray(p)) continue;
+		if (p == null) continue;
+		if (p.hasOwnProperty("type") && p.type == "drive") {
+			var levelDiff = p.level;
+			if (target.hasOwnProperty(drive) && target[drive].hasOwnProperty("level")) levelDiff -= target[drive].level
+			result += " - " + p.name + ": " + levelDiff + "\n";
+		}
+	}
+	entity._sendMsg(result);
+}
+
+function cmd_sudo(entity, args) {
+    if (args.length <= 1) {
+        entity._sendMsg("Usage: sudo <command>, args.length=" + args.length + " args=[" + args + "]");
+        return;
+    }
+    args.splice(0,1);
+    var oldLevel = entity.level;
+    entity.level = playermanager.Game().levelMax;
+    
+    parseCommand(entity, args);
+    
+    entity.level = oldLevel;
+}
+
+function cmd_quit(entity, args) {
+	playermanager.saveEntity(entity);
+	entity.quit();	
+}
+function gotoPosition(entity, position) {
+	var oldPosition = entity.getPosition();
+	console.log("gotoPosition(" + position + ") from " + oldPosition);
+
+	if (position == oldPosition) {
+		entity._sendMsg("You are already " + position + ".");
+		return;
+	} else {
+		var newPosition = entity.setPosition(position);
+		if (newPosition != position) {
+			console.log("error taking position " + position + " from " + oldPosition + ". We ended up " + newPosition );
+			return;
+		}
+
+		if (oldPosition == "standing") {
+			if (position == "kneeling") {
+				entity._sendMsg("You fall to your knees.");
+				entity.container.sendToEveryoneExcept([entity], entity.getUpperCaseAction() + " sinks down onto both knees.");
+			} else if (position == "sitting") {
+				entity._sendMsg("You sit down.");
+				entity.container.sendToEveryoneExcept([entity], entity.getUpperCaseAction() + " sits down.");
+			} else if (position == "sleeping") {
+				entity._sendMsg("You lay down and fall asleep.");
+				entity.container.sendToEveryoneExcept([entity], entity.getUpperCaseAction() + " lays down and falls asleep.");
+			}
+		} else if (oldPosition == "kneeling" || oldPosition == "sitting") {
+			if (position == "standing") {
+				entity._sendMsg("You climb up onto your feet.");
+				entity.container.sendToEveryoneExcept([entity], entity.getUpperCaseAction() + " stands up.");
+			} else if (position == "sleeping") {
+				entity._sendMsg("You lay down and fall asleep.");
+				entity.container.sendToEveryoneExcept([entity], entity.getUpperCaseAction() + " lays down and falls asleep.");
+			} else if (position == "kneeling") {
+				entity._sendMsg("You rise up to your knees.");
+				entity.container.sendToEveryoneExcept([entity], entity.getUpperCaseAction() + " rises onto both knees.");
+			}
+		} else if (oldPosition == "sleeping") {
+			if (position == "standing") {
+				entity._sendMsg("You wake up and climb to your feet.");
+				entity.container.sendToEveryoneExcept([entity], entity.getUpperCaseAction() + " wakes and stands up.");
+			} else if (position == "sitting" || position == "kneeling") {
+				entity._sendMsg("You climb to a " + position + " position.");
+				entity.container.sendToEveryoneExcept([entity], entity.getUpperCaseAction() + " wakes and assumes a " + position + " position.");
+			}
+		} else {
+			entity._sendMsg("You take a " + newPosition + " position.");
+			entity.container.sendToEveryoneExcept([entity], entity.getUpperCaseAction() + " takes a " + newPosition + " position.");
+		}
+	}
+}
+function cmd_stand(entity, args) { gotoPosition(entity, "standing"); }
+function cmd_kneel(entity, args) { gotoPosition(entity, "kneeling"); }
+function cmd_sit(entity, args) { gotoPosition(entity, "sitting"); }
+function cmd_sleep(entity, args) { gotoPosition(entity, "sleeping"); }
+function cmd_wake(entity, args) {
+	if (entity.getPosition() == "sleeping") gotoPosition(entity, "sitting");
+	else entity._sendMsg("You are already awake.");
 }

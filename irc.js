@@ -1,6 +1,6 @@
 var irc = require("irc");
 var databaseUrl = "mydb";
-var dbCollections = ["bot","messageBuffer"];
+var dbCollections = ["authenticatingPlayers","players","bot","messageBuffer"];
 var db = require("mongojs").connect(databaseUrl, dbCollections);
 var playermanager = require("./playermanager.js");
 var sys = require("sys");
@@ -9,9 +9,11 @@ var dccserver = require("./dccserver.js");
 
 exports.addToSendBuffer = addToSendBuffer;
 exports.disconnect = disconnect;
+exports.sendToMainChannel = sendToMainChannel;
 
 var setupComplete = 0;
 var lastAuthTokenTime = -10000;
+var players = [];
 
 var config = {
     channels: [
@@ -106,6 +108,17 @@ function addToSendBuffer(row) {
     db.messageBuffer.save(row);
 }
 
+function sendToMainChannel(msg) {
+	console.log(">" + config.channels[0] + ": " + msg);
+
+	addToSendBuffer({
+		target: config.channels[0],
+		message: msg,
+		initiatedTime: Date.now()
+	});
+
+}
+
 function checkOutgoingMessageBuffer() {
     //console.log('checking msgbuf');
     messageBuffer.lastCheckTime = Date.now();
@@ -186,6 +199,49 @@ function generateAuthToken() {
 	return str;
 }
 
+function player() {
+	this.serversAndNicks = [];
+	this.characters = [];
+	this.characterState = null;
+	this.authToken = "";
+	this.type = "player";
+}
+function readPlayersFromDB() {
+	console.log("requesting players from database.");
+	db.players.find().forEach(receivedPlayerFromDB);
+}
+function receivedPlayerFromDB(err, p) {
+	if (!p) {
+		//executeNextStepInBootSequence();
+	} else if (p.type == "player") {
+		if (p.hasOwnProperty("serversAndNicks") && p.serversAndNicks.length > 0) {
+			console.log("\treading " + p.serversAndNicks[0].nick + " @ " + p.serversAndNicks[0].server);
+		}
+		players.push(p);
+	} else {
+		console.log("\tskipping unknown data: " + JSON.stringify(p));
+	}
+}
+function getPlayer(nick) {
+	for (var i = 0; i < players.length; i++) {
+		var player = players[i];
+		if (player.hasOwnProperty("serversAndNicks")) {
+			for (j = 0; j < player.serversAndNicks.length; j++) {
+				var entry = player.serversAndNicks[i];
+				if (entry.nick == nick && config.server == entry.server) {
+					console.log("found player");
+					return player;
+				} else continue;
+			}
+		}
+	}
+	console.log("could not find player, creating anew!");
+	var newPlayer = new player();
+	newPlayer.serversAndNicks.push({server: config.server, nick: nick});
+
+	return null;
+}
+
 function parseNotice(from, to, text, message) {
 	//console.log("notice:" + JSON.stringify(message));
     	status.connected = true;
@@ -220,14 +276,14 @@ function parseNotice(from, to, text, message) {
 			var msg = message.args[1].split(" ");
 			if (msg.length == 3) {
 				if (msg[0] == "STATUS") {
-					var player = playermanager.getPlayerByNick(msg[1]);
+					var player = getPlayer(msg[1]);
 
 					if (player == null) {
 						console.log("Fuck, just received NickServ status for an unknown nick (" + msg[1] + ") wtf?!");
 						return;
 					} else {
 						if (msg[2] == "3") {
-							player.setNickServStatus("authenticated");
+							player.nickservStatus ="authenticated";
 							console.log("Client requested DCC info, sending...");			// 173.65.94.69
 							bot.send("PRIVMSG", msg[1], String.fromCharCode(1) + "DCC", "CHAT", "chat", "2906742341", "4444"+String.fromCharCode(1));
 							var authToken = generateAuthToken();
@@ -235,7 +291,8 @@ function parseNotice(from, to, text, message) {
 							player.authToken = authToken;
 							player.authTokenCreationTime = Date.now();
 							lastAuthTokenTime = Date.now();
-
+							
+							db.authenticatingPlayers.save(player);
 							//addToSendBuffer({
 							//	target: msg[1],
 							//	message: "You have been authenticated. Type \"sleep\" to enter the Eye of Asiktri.",
@@ -244,7 +301,7 @@ function parseNotice(from, to, text, message) {
 							console.log("received authentication for " + msg[1] + " from nickserv.");
 						} else {
 
-							player.setNickServStatus("undefined");
+							//player.setNickServStatus("undefined");
 
 							addToSendBuffer({
 								target: msg[1],
@@ -292,6 +349,7 @@ function parseNotice(from, to, text, message) {
         
 }
 
+
 function parsePM(pm) {
     status.connected = true;
 
@@ -334,7 +392,7 @@ function parsePM(pm) {
 
 		player.see();
 
-		var nsStatus = player.getNickServStatus();
+		var nsStatus = player.nickservStatus;
 		if (nsStatus == "undefined") {
 			console.log("received msg from new player (" + pm.nick + "). Authorizing with nickserv");
 
@@ -361,11 +419,17 @@ function parsePM(pm) {
 				initiatedTime: Date.now()
 			});
 			return;
-		} 
+		} else {
+			console.log("parsing pm, nsStatus is unknown = " + nsStatus + ".");
+		}
 		
 		
 		if (player.controlling == null) {
+			// this stuff happens in the DCC server now
+			/*
 			var character = playermanager.getCharacterByOwnerName(pm.nick);
+			console.log("\tplayer.controlling == null for irc user [" + pm.nick + "]");
+
 			addToSendBuffer({
 				target: pm.nick,
 				message: "Creating new user...",
@@ -385,6 +449,12 @@ function parsePM(pm) {
 				player.spawn();
 				
 			}
+			*/
+			addToSendBuffer({
+				target: pm.nick,
+				message: "It appears as though we've already sent your client an invitation to DCC chat.",
+				initiatedTime: Date.now()
+			});
 
 		} else {
 			if (!player.hasOwnProperty("authTokenCreationTime") || 
@@ -392,7 +462,13 @@ function parsePM(pm) {
 				console.log("Client requested DCC info, sending...");			// 173.65.94.69
 				bot.send("PRIVMSG", pm.nick, String.fromCharCode(1) + "DCC", "CHAT", "chat", "2906742341", "4444"+String.fromCharCode(1));
 				var authToken = generateAuthToken();i
-				bot.send("PRIVMSG", pm.nick, "You have 1 min to begin DCC and authenticate yourself using this code: " + authToken);
+				//bot.send("PRIVMSG", pm.nick, "You have 1 min to begin DCC and authenticate yourself using this code: " + authToken);
+				addToSendBuffer({
+					target: pm.nick,
+					message: "Please enter the following authentication code in the DCC window: " + authToken,
+					initiatedTime: Date.now()
+				});
+
 				player.authToken = authToken;
 				player.authTokenCreationTime = Date.now();
 				lastAuthTokenTime = Date.now();
@@ -618,6 +694,9 @@ function setup() {
             host: message["host"],
             channel: channel
         };
+	if (channel == config.channels[0] && nick != config.botName) sendToMainChannel("Welcome " + nick + "! PM me if you'd like to join the game.");
+	console.log(channel + ": " + nick + " has joined.");
+
         db.bot.save(row);
     });
     
@@ -694,6 +773,7 @@ function setup() {
 
 }
 
+readPlayersFromDB();
 setInterval(tic, config.messageBufferCheckInterval);
 //setup();
 
